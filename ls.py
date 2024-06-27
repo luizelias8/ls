@@ -5,9 +5,11 @@ import os
 # Configuração do parser de argumentos
 parser = argparse.ArgumentParser()
 
-parser.add_argument('path') # Argumeno obrigatório para o caminho do diretório
+# Argumento opcional para o caminho do diretório com valor padrão para o diretório atual
+parser.add_argument('path', nargs='?', default=os.getcwd(), help='Caminho do diretório (padrão: diretório atual)')
 
-parser.add_argument('-l', '--long', action='store_true') # Argumento opcional para formato longo
+# Argumento opcional para formato longo
+parser.add_argument('-l', '--long', action='store_true', help='Exibe informações detalhadas dos arquivos')
 
 args = parser.parse_args() # Parse dos argumentos
 
