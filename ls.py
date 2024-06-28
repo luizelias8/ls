@@ -19,6 +19,14 @@ parser.add_argument('-l', '--long', action='store_true', help='Exibe informaçõ
 # Flag para listar subdiretórios de forma recursiva
 parser.add_argument('-r', '--recursive', action='store_true', help='Lista arquivos e subdiretórios de forma recursiva')
 
+# Argumento opcional para filtrar por tipo de arquivo
+parser.add_argument(
+    '-f', '--filter',
+    choices=['files', 'dirs', 'all'],
+    default='all',
+    help='Filtrar por tipo de conteúdo: `files` para listar apenas arquivos, `dirs` para listar apenas diretórios, `all` (padrão) para listar ambos'
+)
+
 args = parser.parse_args() # Parse dos argumentos
 
 target_dir = args.path # Atribui o caminho fornecido à variável target_dir
@@ -39,21 +47,26 @@ def build_output(entry, long=False):
     return os.path.basename(entry) # Retorna apenas o nome do arquivo
 
 # Função para listar arquivos no diretório, possivelmente de forma recursiva
-def list_files(base_dir, recursive=False, long=False):
+def list_files(base_dir, recursive=False, long=False, filter_type='all'):
     if recursive:
         # Uso de os.walk para listar de forma recursiva
         for root, dirs, files in os.walk(base_dir):
             for name in files:
                 file_path = os.path.join(root, name) # Constrói o caminho completo do arquivo
-                print(build_output(file_path, long=long))
+                if filter_type in ['files', 'all']:
+                    print(build_output(file_path, long=long))
             for name in dirs:
                 dir_path = os.path.join(root, name) # Constrói o caminho completo do subdiretório
-                print(build_output(dir_path, long=long))
+                if filter_type in ['dirs', 'all']:
+                    print(build_output(dir_path, long=long))
     else:
         # Uso de os.listdir para listar apenas o conteúdo do diretório base
         for entry in os.listdir(base_dir):
             entry_path = os.path.join(base_dir, entry) # Constrói o caminho completo do arquivo
-            print(build_output(entry_path, long=long))
+            if os.path.isfile(entry_path) and filter_type in ['files', 'all']:
+                print(build_output(entry_path, long=long))
+            elif os.path.isdir(entry_path) and filter_type in ['dirs', 'all']:
+                print(build_output(entry_path, long=long))
 
 # Chamada da função para listar arquivos
-list_files(target_dir, recursive=args.recursive, long=args.long)
+list_files(target_dir, recursive=args.recursive, long=args.long, filter_type=args.filter)
