@@ -3,7 +3,11 @@ import datetime
 import os
 
 # Configuração do parser de argumentos
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(
+    prog='ls',
+    description='Script para listar arquivos e diretórios.',
+    epilog='Obrigado por usar %(prog)s! :)'
+)
 
 # Argumento opcional para o caminho do diretório com valor padrão para o diretório atual
 parser.add_argument('path', nargs='?', default=os.getcwd(), help='Caminho do diretório (padrão: diretório atual)')
