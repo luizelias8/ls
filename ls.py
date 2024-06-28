@@ -33,6 +33,14 @@ parser.add_argument('-o', '--output', metavar='ARQUIVO', help='Exporta a saída 
 # Flag para contagem de arquivos e diretórios
 parser.add_argument('-c', '--count', action='store_true', help='Exibe a contagem de arquivos e diretórios')
 
+# Argumento para critério de ordenação
+parser.add_argument(
+    '-s', '--sort',
+    choices=['name', 'size', 'date'],
+    default='name',
+    help='Critério de ordenação: `name` para ordenar por nome, `size` para ordenar por tamanho, `date` para ordenar por data de modificação'
+)
+
 args = parser.parse_args() # Parse dos argumentos
 
 target_dir = args.path # Atribui o caminho fornecido à variável target_dir
@@ -54,10 +62,12 @@ def build_output(entry, long=False):
     return os.path.basename(entry) # Retorna apenas o nome do arquivo
 
 # Função para listar arquivos no diretório, possivelmente de forma recursiva
-def list_files(base_dir, recursive=False, long=False, filter_type='all'):
+def list_files(base_dir, recursive=False, long=False, filter_type='all', sort_by='name'):
     output_lines = [] # Lista para armazenar as linhas de saída
     file_count = 0 # Contador de arquivos
     dir_count = 0 # Contador de diretórios
+
+    entries = []
 
     if recursive:
         # Uso de os.walk para listar de forma recursiva
@@ -65,23 +75,35 @@ def list_files(base_dir, recursive=False, long=False, filter_type='all'):
             for name in files:
                 file_path = os.path.join(root, name) # Constrói o caminho completo do arquivo
                 if filter_type in ['files', 'all']:
-                    output_lines.append(build_output(file_path, long=long))
+                    entries.append(file_path)
                     file_count += 1 # Incrementa o contador de arquivos
             for name in dirs:
                 dir_path = os.path.join(root, name) # Constrói o caminho completo do subdiretório
                 if filter_type in ['dirs', 'all']:
-                    output_lines.append(build_output(dir_path, long=long))
+                    entries.append(dir_path)
                     dir_count += 1 # Incrementa o contador de diretórios
     else:
         # Uso de os.listdir para listar apenas o conteúdo do diretório base
         for entry in os.listdir(base_dir):
             entry_path = os.path.join(base_dir, entry) # Constrói o caminho completo do arquivo
             if os.path.isfile(entry_path) and filter_type in ['files', 'all']:
-                output_lines.append(build_output(entry_path, long=long))
+                entries.append(entry_path)
                 file_count += 1 # Incrementa o contador de arquivos
             elif os.path.isdir(entry_path) and filter_type in ['dirs', 'all']:
-                output_lines.append(build_output(entry_path, long=long))
+                entries.append(entry_path)
                 dir_count += 1 # Incrementa o contador de diretórios
+
+    # Ordena a lista de acordo com o critério especificado
+    if sort_by == 'name':
+        entries.sort(key=lambda e: os.path.basename(e).lower())
+    elif sort_by == 'size':
+        entries.sort(key=lambda e: os.path.getsize(e))
+    elif sort_by == 'date':
+        entries.sort(key=lambda e: os.path.getmtime(e))
+
+    # Constrói as linhas de saída formatadas
+    for entry in entries:
+        output_lines.append(build_output(entry, long=long))
 
     return output_lines, file_count, dir_count
 
@@ -92,7 +114,7 @@ def export_to_file(output_file, lines):
             f.write(line + '\n')
 
 # Chamada da função para listar arquivos
-output_lines, file_count, dir_count = list_files(target_dir, recursive=args.recursive, long=args.long, filter_type=args.filter)
+output_lines, file_count, dir_count = list_files(target_dir, recursive=args.recursive, long=args.long, filter_type=args.filter, sort_by=args.sort)
 
 # Se especificado, exporta para arquivo
 if args.output:
