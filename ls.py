@@ -6,7 +6,8 @@ import os
 parser = argparse.ArgumentParser(
     prog='ls',
     description='Script para listar arquivos e diretórios.',
-    epilog='Obrigado por usar %(prog)s! :)'
+    epilog='Obrigado por usar %(prog)s! :)',
+    allow_abbrev=False # Desativa abreviação automática de opções
 )
 
 # Argumento opcional para o caminho do diretório com valor padrão para o diretório atual
