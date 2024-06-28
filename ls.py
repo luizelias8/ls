@@ -58,7 +58,7 @@ def build_output(entry, long=False):
             os.path.getmtime(entry) # Obtém a data de modificação do arquivo
         ).strftime('%b %d %H:%M:%S')
         file_type = 'd' if os.path.isdir(entry) else '-'
-        return f'{file_type} {size:>6d} {date} {os.path.basename(entry)}' # Formata a saída para o formato longo
+        return f'{file_type} {size:>10d} {date} {os.path.basename(entry)}' # Formata a saída para o formato longo
     return os.path.basename(entry) # Retorna apenas o nome do arquivo
 
 # Função para listar arquivos no diretório, possivelmente de forma recursiva
